@@ -189,9 +189,9 @@ class ChronoSwarmApp {
             switch (handData.gesture) {
                 case 'Index Point': targetShape = 'Saturn'; break;
                 case 'Peace Sign': targetShape = 'Heart'; break;
-                case 'Three Fingers': targetShape = 'Flower'; break;
-                case 'Four Fingers': targetShape = 'Torus'; break;
-                case 'Open Palm': targetShape = 'Fireworks'; break;
+                case 'Three Fingers': targetShape = 'Galaxy'; break;
+                case 'Four Fingers': targetShape = 'Tornado'; break;
+                case 'Open Palm': targetShape = 'Supernova'; break;
                 case 'Fist': targetShape = 'DNA'; break;
             }
             

@@ -165,17 +165,23 @@ class ParticleSystemManager {
             case 'Heart':
                 this.generateHeart(targets, count);
                 break;
-            case 'Flower':
-                this.generateFlower(targets, count);
+            case 'Galaxy':
+                this.generateGalaxy(targets, count);
                 break;
-            case 'Torus':
-                this.generateTorus(targets, count);
+            case 'Tornado':
+                this.generateTornado(targets, count);
                 break;
             case 'DNA':
                 this.generateDNA(targets, count);
                 break;
-            case 'Fireworks':
-                this.generateFireworks(targets, count);
+            case 'Supernova':
+                this.generateSupernova(targets, count);
+                break;
+            case 'Blackhole':
+                this.generateBlackhole(targets, count);
+                break;
+            case 'Atom':
+                this.generateAtom(targets, count);
                 break;
         }
         
@@ -237,49 +243,95 @@ class ParticleSystemManager {
         }
     }
 
-    generateFlower(targets, count) {
-        const petals = 6;
+    generateGalaxy(targets, count) {
+        const arms = 4;
+        const coreSplit = Math.floor(count * 0.25);
+        const armSplit = Math.floor(count * 0.65);
+
         for (let i = 0; i < count; i++) {
             const idx = i * 3;
-            // Sunflower packing spiral (Fermat's spiral)
-            const angle = i * 137.5 * Math.PI / 180;
-            const r = Math.sqrt(i) / Math.sqrt(count) * 9; // radius out to 9 units
-            
-            // Wave mapping for petals structure
-            const petalIntensity = Math.sin(angle * petals) * 1.5;
-            // Add a wavy height profile in Z
-            const z = petalIntensity * (r / 9.0) * 1.2 + (Math.random() - 0.5) * 0.4;
-            
-            // Expand radius slightly at peak of petals
-            const modR = r + (petalIntensity > 0 ? petalIntensity * 0.3 : 0);
 
-            targets[idx] = modR * Math.cos(angle);
-            targets[idx + 1] = modR * Math.sin(angle);
-            targets[idx + 2] = z;
+            if (i < coreSplit) {
+                // Dense central bulge — concentrated spheroid
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const r = Math.pow(Math.random(), 0.5) * 2.0;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta);
+                targets[idx + 1] = r * Math.cos(phi) * 0.35;
+                targets[idx + 2] = r * Math.sin(phi) * Math.sin(theta);
+            } else if (i < coreSplit + armSplit) {
+                // Logarithmic spiral arm particles
+                const armIndex = i % arms;
+                const armOffset = (armIndex / arms) * Math.PI * 2;
+                const t = Math.random();
+                const r = 2.0 + t * 8.5;
+
+                const spiralAngle = armOffset + t * Math.PI * 3.5;
+                const spread = t * 1.0;
+                const offsetAngle = (Math.random() - 0.5) * spread;
+                const angle = spiralAngle + offsetAngle;
+                const y = (Math.random() - 0.5) * (0.2 + t * 0.4);
+
+                targets[idx] = r * Math.cos(angle);
+                targets[idx + 1] = y;
+                targets[idx + 2] = r * Math.sin(angle);
+            } else {
+                // Sparse outer halo
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const r = 3.0 + Math.random() * 8.0;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta) * 0.7;
+                targets[idx + 1] = r * Math.cos(phi) * 0.15;
+                targets[idx + 2] = r * Math.sin(phi) * Math.sin(theta) * 0.7;
+            }
         }
     }
 
-    generateTorus(targets, count) {
-        const p = 3; // winding number
-        const q = 7; // winding number
-        
+    generateTornado(targets, count) {
+        const funnelSplit = Math.floor(count * 0.78);
+        const debrisSplit = Math.floor(count * 0.12);
+
         for (let i = 0; i < count; i++) {
             const idx = i * 3;
-            const t = (i / count) * Math.PI * 2 * p; // loop around
-            
-            // Knot path coordinates
-            const rKnot = 1.6 * (2.0 + Math.cos(q * t / p));
-            const xKnot = rKnot * Math.cos(t);
-            const yKnot = rKnot * Math.sin(t);
-            const zKnot = rKnot * Math.sin(q * t / p) * 0.5;
 
-            // Make it a thick tube by adding radial cylinder offsets
-            const u = Math.random() * Math.PI * 2;
-            const tubeRadius = 0.6 + Math.random() * 0.8;
-            
-            targets[idx] = xKnot + Math.cos(u) * tubeRadius;
-            targets[idx + 1] = yKnot + Math.sin(u) * tubeRadius;
-            targets[idx + 2] = zKnot + (Math.random() - 0.5) * tubeRadius;
+            if (i < funnelSplit) {
+                // Funnel vortex — narrow at bottom, wide at top
+                const t = Math.random();
+                const height = t * 16 - 8;
+
+                const baseRadius = 0.25;
+                const topRadius = 5.5;
+                const radius = baseRadius + (topRadius - baseRadius) * Math.pow(t, 1.6);
+
+                // Dense spiral winding — tighter at bottom
+                const spiralTurns = 10 - t * 4;
+                const angle = t * Math.PI * 2 * spiralTurns + (i * 0.618) % (Math.PI * 2);
+
+                const thickness = 0.15 + t * 0.6;
+                const rOffset = radius + (Math.random() - 0.5) * thickness;
+
+                targets[idx] = rOffset * Math.cos(angle);
+                targets[idx + 1] = height;
+                targets[idx + 2] = rOffset * Math.sin(angle);
+            } else if (i < funnelSplit + debrisSplit) {
+                // Ground debris cloud
+                const theta = Math.random() * Math.PI * 2;
+                const r = Math.pow(Math.random(), 0.6) * 5;
+
+                targets[idx] = r * Math.cos(theta) + (Math.random() - 0.5) * 1.5;
+                targets[idx + 1] = -8 + Math.random() * 2.5;
+                targets[idx + 2] = r * Math.sin(theta) + (Math.random() - 0.5) * 1.5;
+            } else {
+                // Upper dispersion cloud
+                const theta = Math.random() * Math.PI * 2;
+                const r = 3 + Math.random() * 5;
+
+                targets[idx] = r * Math.cos(theta) + (Math.random() - 0.5) * 3;
+                targets[idx + 1] = 6 + Math.random() * 4;
+                targets[idx + 2] = r * Math.sin(theta) + (Math.random() - 0.5) * 3;
+            }
         }
     }
 
@@ -330,33 +382,155 @@ class ParticleSystemManager {
         }
     }
 
-    generateFireworks(targets, count) {
-        // Multi-point fireworks nodes
-        const numCenters = 5;
-        const centers = [];
-        for (let c = 0; c < numCenters; c++) {
-            centers.push({
-                x: (Math.random() - 0.5) * 12,
-                y: (Math.random() - 0.5) * 6 + 3,
-                z: (Math.random() - 0.5) * 8,
-                radius: 3 + Math.random() * 4
-            });
-        }
+    generateSupernova(targets, count) {
+        const shellSplit = Math.floor(count * 0.45);
+        const jetSplit = Math.floor(count * 0.25);
+        // Remaining 30%: inner shockwave nebula
 
         for (let i = 0; i < count; i++) {
             const idx = i * 3;
-            // Distribute particles among centers
-            const centerIdx = i % numCenters;
-            const c = centers[centerIdx];
-            
-            // Random direction in sphere
-            const theta = Math.random() * Math.PI * 2;
-            const phi = Math.acos(Math.random() * 2 - 1);
-            const r = Math.random() * c.radius;
-            
-            targets[idx] = c.x + r * Math.sin(phi) * Math.cos(theta);
-            targets[idx + 1] = c.y + r * Math.sin(phi) * Math.sin(theta);
-            targets[idx + 2] = c.z + r * Math.cos(phi);
+
+            if (i < shellSplit) {
+                // Expanding spherical shell with filamentary ripples
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const baseR = 7.5;
+
+                const filament = Math.sin(theta * 6 + phi * 4) * 0.7
+                               + Math.cos(theta * 3 - phi * 7) * 0.4;
+                const r = baseR + filament + (Math.random() - 0.5) * 0.8;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta);
+                targets[idx + 1] = r * Math.sin(phi) * Math.sin(theta);
+                targets[idx + 2] = r * Math.cos(phi);
+            } else if (i < shellSplit + jetSplit) {
+                // Bipolar jets — twin beams erupting from the poles
+                const isTop = Math.random() > 0.5;
+                const direction = isTop ? 1 : -1;
+
+                const t = Math.pow(Math.random(), 0.7);
+                const jetLength = 11;
+                const jetRadius = 0.4 + t * 1.8;
+
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.random() * jetRadius;
+
+                targets[idx] = r * Math.cos(angle);
+                targets[idx + 1] = r * Math.sin(angle);
+                targets[idx + 2] = direction * (2.5 + t * jetLength);
+            } else {
+                // Inner shockwave nebula — dense toward center
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const r = Math.pow(Math.random(), 0.6) * 5;
+
+                const warp = Math.sin(theta * 2) * 0.4;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta) + warp;
+                targets[idx + 1] = r * Math.sin(phi) * Math.sin(theta);
+                targets[idx + 2] = r * Math.cos(phi);
+            }
+        }
+    }
+
+    generateBlackhole(targets, count) {
+        const diskSplit = Math.floor(count * 0.55);
+        const photonSplit = Math.floor(count * 0.15);
+        const jetSplit = Math.floor(count * 0.20);
+        // Remaining 10%: Einstein ring / gravitational lensing halo
+
+        for (let i = 0; i < count; i++) {
+            const idx = i * 3;
+
+            if (i < diskSplit) {
+                // Accretion disk — spiraling matter with warp
+                const t = Math.random();
+                const r = 3.0 + t * 7.0;
+                const theta = Math.random() * Math.PI * 2 + t * Math.PI * 4;
+
+                const warpAngle = 0.35;
+                const x = r * Math.cos(theta);
+                const y = (Math.random() - 0.5) * (0.12 + t * 0.25);
+                const z = r * Math.sin(theta);
+
+                targets[idx] = x;
+                targets[idx + 1] = y * Math.cos(warpAngle) - z * Math.sin(warpAngle) * 0.12;
+                targets[idx + 2] = z * Math.cos(warpAngle) + y * Math.sin(warpAngle);
+            } else if (i < diskSplit + photonSplit) {
+                // Photon sphere — bright dense ring at event horizon edge
+                const theta = Math.random() * Math.PI * 2;
+                const r = 2.6 + (Math.random() - 0.5) * 0.5;
+                const y = (Math.random() - 0.5) * 0.25;
+
+                targets[idx] = r * Math.cos(theta);
+                targets[idx + 1] = y;
+                targets[idx + 2] = r * Math.sin(theta);
+            } else if (i < diskSplit + photonSplit + jetSplit) {
+                // Relativistic jets — narrow twin beams from poles
+                const isTop = Math.random() > 0.5;
+                const direction = isTop ? 1 : -1;
+                const t = Math.pow(Math.random(), 0.5);
+
+                const jetLength = 13;
+                const jetRadius = 0.15 + t * 0.7;
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.random() * jetRadius;
+
+                targets[idx] = r * Math.cos(angle);
+                targets[idx + 1] = direction * (1.5 + t * jetLength);
+                targets[idx + 2] = r * Math.sin(angle);
+            } else {
+                // Einstein ring — gravitational lensing sphere
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const r = 2.4 + (Math.random() - 0.5) * 0.35;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta);
+                targets[idx + 1] = r * Math.sin(phi) * Math.sin(theta);
+                targets[idx + 2] = r * Math.cos(phi);
+            }
+        }
+    }
+
+    generateAtom(targets, count) {
+        const nucleusSplit = Math.floor(count * 0.18);
+        const orbits = 3;
+
+        for (let i = 0; i < count; i++) {
+            const idx = i * 3;
+
+            if (i < nucleusSplit) {
+                // Nucleus — dense proton/neutron cluster
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(Math.random() * 2 - 1);
+                const r = Math.pow(Math.random(), 0.4) * 1.5;
+
+                targets[idx] = r * Math.sin(phi) * Math.cos(theta);
+                targets[idx + 1] = r * Math.sin(phi) * Math.sin(theta);
+                targets[idx + 2] = r * Math.cos(phi);
+            } else {
+                // Electron orbital rings — 3 ellipses at 60° tilts
+                const orbitIdx = (i - nucleusSplit) % orbits;
+                const semiMajor = 7.0;
+                const semiMinor = 3.2;
+                const theta = Math.random() * Math.PI * 2;
+
+                const tubeR = 0.18 + Math.random() * 0.22;
+                const tubeAngle = Math.random() * Math.PI * 2;
+
+                let x = (semiMajor + tubeR * Math.cos(tubeAngle)) * Math.cos(theta);
+                let y = (semiMinor + tubeR * Math.cos(tubeAngle)) * Math.sin(theta);
+                let z = tubeR * Math.sin(tubeAngle);
+
+                // Rotate each orbit 60° apart around Y axis
+                const rotAngle = (orbitIdx / orbits) * Math.PI;
+                const nx = x * Math.cos(rotAngle) + z * Math.sin(rotAngle);
+                const nz = -x * Math.sin(rotAngle) + z * Math.cos(rotAngle);
+
+                targets[idx] = nx;
+                targets[idx + 1] = y;
+                targets[idx + 2] = nz;
+            }
         }
     }
 
@@ -384,6 +558,22 @@ class ParticleSystemManager {
             } else if (this.activeShape === 'DNA') {
                 // Strand color gradient based on helical height Z
                 t = (tz + 15) / 30;
+            } else if (this.activeShape === 'Galaxy') {
+                // Spiral arm gradient with angular hue shift
+                const angle = Math.atan2(tz, tx);
+                t = Math.min(1.0, dist / 10.0) * 0.7 + Math.sin(angle * 2) * 0.15 + 0.15;
+            } else if (this.activeShape === 'Tornado') {
+                // Ground-to-sky height gradient
+                t = (ty + 8) / 16;
+            } else if (this.activeShape === 'Supernova') {
+                // Radial explosion gradient: core bright, shell edge
+                t = Math.min(1.0, dist / 12.0);
+            } else if (this.activeShape === 'Blackhole') {
+                // Accretion disk: bright inner edge fading outward
+                t = 1.0 - Math.min(1.0, dist / 11.0);
+            } else if (this.activeShape === 'Atom') {
+                // Nucleus glows distinct from orbital rings
+                t = i < (count * 0.18) ? 0.1 : Math.min(1.0, dist / 8.0);
             } else {
                 // Radial gradient based on bounds
                 t = Math.min(1.0, dist / 10.0);
@@ -539,9 +729,42 @@ class ParticleSystemManager {
             velocities[idx + 1] *= 0.94;
             velocities[idx + 2] *= 0.94;
 
-            // Special Fireworks drift (slow falling effect if Fireworks shape is active and not pinching)
-            if (this.activeShape === 'Fireworks' && !(handData.active && handData.isPinching)) {
-                py -= 0.008; // slow drift downward
+            // Special shape-specific drift animations
+            if (this.activeShape === 'Tornado' && !(handData.active && handData.isPinching)) {
+                // Upward spiral drift
+                py += 0.005;
+                const rad = Math.sqrt(px * px + pz * pz);
+                if (rad > 0.1) {
+                    const angle = Math.atan2(pz, px);
+                    px += Math.cos(angle + Math.PI / 2) * 0.012;
+                    pz += Math.sin(angle + Math.PI / 2) * 0.012;
+                }
+            } else if (this.activeShape === 'Supernova' && !(handData.active && handData.isPinching)) {
+                // Slow radial expansion pulsation
+                const rad = Math.sqrt(px * px + py * py + pz * pz);
+                if (rad > 0.1) {
+                    px += (px / rad) * 0.002;
+                    py += (py / rad) * 0.002;
+                    pz += (pz / rad) * 0.002;
+                }
+            } else if (this.activeShape === 'Blackhole' && !(handData.active && handData.isPinching)) {
+                // Slow inward spiral around the singularity
+                const rad = Math.sqrt(px * px + pz * pz);
+                if (rad > 0.3) {
+                    const angle = Math.atan2(pz, px);
+                    px += Math.cos(angle + Math.PI / 2) * 0.015;
+                    pz += Math.sin(angle + Math.PI / 2) * 0.015;
+                    px -= (px / rad) * 0.001;
+                    pz -= (pz / rad) * 0.001;
+                }
+            } else if (this.activeShape === 'Atom' && !(handData.active && handData.isPinching)) {
+                // Electron orbital rotation
+                const rad = Math.sqrt(px * px + py * py + pz * pz);
+                if (rad > 2.0) {
+                    const angle = Math.atan2(pz, px);
+                    px += Math.cos(angle + Math.PI / 2) * 0.008;
+                    pz += Math.sin(angle + Math.PI / 2) * 0.008;
+                }
             }
 
             // Add up all updates to current coordinates
