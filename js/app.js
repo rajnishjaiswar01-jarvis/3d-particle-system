@@ -78,7 +78,7 @@ class ChronoSwarmApp {
         this.renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(1);
-        this.renderer.setClearColor(0x0a0b10);
+        this.renderer.setClearColor(0x0e0c14);
         this.container.appendChild(this.renderer.domElement);
         
         // Orbit Controls for standard navigation
@@ -136,7 +136,7 @@ class ChronoSwarmApp {
         // Mouse click triggers "Pinch Contraction"
         window.addEventListener('mousedown', (e) => {
             // Prevent interference with sidebar menus
-            if (e.target.closest('#ui-overlay') || e.target.closest('.overlay-prompt')) return;
+            if (e.target.closest('#ui-root') || e.target.closest('.prompt-overlay')) return;
             
             this.isMouseDown = true;
             this.mouseActive = true;
@@ -159,7 +159,7 @@ class ChronoSwarmApp {
         });
         
         window.addEventListener('touchstart', (e) => {
-            if (e.target.closest('#ui-overlay') || e.target.closest('.overlay-prompt')) return;
+            if (e.target.closest('#ui-root') || e.target.closest('.prompt-overlay')) return;
             this.isMouseDown = true;
             this.mouseActive = true;
             this.controls.enabled = false;

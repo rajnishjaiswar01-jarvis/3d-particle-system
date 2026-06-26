@@ -5,7 +5,7 @@ class ParticleSystemManager {
         this.currentCount = 5000;
         this.particleSize = 0.18;
         this.morphSpeed = 0.04;
-        this.activeTheme = 'cosmic';
+        this.activeTheme = 'bioluminescent';
         this.activeShape = 'Saturn';
         
         // Physics and turbulence parameters
@@ -54,37 +54,37 @@ class ParticleSystemManager {
         this.points = new THREE.Points(this.geometry, this.material);
         this.scene.add(this.points);
 
-        // Define color themes
+        // Define color themes — entirely new palettes
         this.themes = {
-            cosmic: [
-                new THREE.Color('#4c00ff'), // Deep Indigo
-                new THREE.Color('#00ffff'), // Cyan
-                new THREE.Color('#ff00aa'), // Magenta
-                new THREE.Color('#ffaa00')  // Amber Gold
+            'bioluminescent': [
+                new THREE.Color('#00ffc8'), // Bright Mint
+                new THREE.Color('#00b4d8'), // Ocean Teal
+                new THREE.Color('#9b5de5'), // Electric Violet
+                new THREE.Color('#f72585')  // Vivid Magenta
             ],
-            synthwave: [
-                new THREE.Color('#ff0055'), // Hot Pink
-                new THREE.Color('#7a00ff'), // Purple Neon
-                new THREE.Color('#00e1ff'), // Electric Blue
-                new THREE.Color('#ffdd00')  // Sun Yellow
+            'volcanic': [
+                new THREE.Color('#ff4500'), // Molten Orange
+                new THREE.Color('#ff8c00'), // Deep Amber
+                new THREE.Color('#ffd700'), // Liquid Gold
+                new THREE.Color('#fff5cc')  // White Hot Core
             ],
-            solar: [
-                new THREE.Color('#ff2200'), // Intense Red
-                new THREE.Color('#ff7700'), // Orange
-                new THREE.Color('#ffdd00'), // Gold Yellow
-                new THREE.Color('#ffeedd')  // Solar White
+            'deep-ocean': [
+                new THREE.Color('#0a2342'), // Abyss Blue
+                new THREE.Color('#1e6091'), // Deep Marine
+                new THREE.Color('#48cae4'), // Luminous Aqua
+                new THREE.Color('#ade8f4')  // Surface Shimmer
             ],
-            aurora: [
-                new THREE.Color('#00ffaa'), // Neon Green
-                new THREE.Color('#00ffd5'), // Mint Teal
-                new THREE.Color('#0088ff'), // Deep Blue
-                new THREE.Color('#7a00ff')  // Violet Aurora
+            'prismatic': [
+                new THREE.Color('#ff006e'), // Hot Pink
+                new THREE.Color('#fb5607'), // Tangerine
+                new THREE.Color('#ffbe0b'), // Sunflower
+                new THREE.Color('#06d6a0')  // Jade Green
             ],
-            'fire-ice': [
-                new THREE.Color('#ff4400'), // Fiery Orange
-                new THREE.Color('#ffaa00'), // Fire Yellow
-                new THREE.Color('#00aaff'), // Ice Blue
-                new THREE.Color('#aaddff')  // White Frost
+            'moonstone': [
+                new THREE.Color('#c9b1ff'), // Soft Lavender
+                new THREE.Color('#ffd6e0'), // Blush Pink
+                new THREE.Color('#bde0fe'), // Baby Blue
+                new THREE.Color('#e2d1f9')  // Pale Violet
             ]
         };
 

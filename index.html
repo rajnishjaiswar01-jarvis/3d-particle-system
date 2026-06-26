@@ -4,268 +4,296 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChronoSwarm - Interactive 3D Particle System</title>
-    <!-- Google Fonts -->
+    <meta name="description" content="ChronoSwarm — an interactive 3D particle swarm with hand tracking and gesture-based morphing.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
-    <!-- FontAwesome for icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
-    <!-- WebGL Canvas Container -->
+
+    <!-- WebGL Canvas -->
     <div id="canvas-container"></div>
 
-    <!-- Camera Permission Prompt Overlay -->
-    <div id="camera-prompt" class="overlay-prompt" style="display:none">
-        <div class="prompt-content glass">
-            <div class="prompt-icon"><i class="fa-solid fa-camera-retro"></i></div>
-            <h2>Enable Hand Tracking</h2>
-            <p>This experience uses your webcam to track hands and translate gestures into 3D particle shapes. Your video feed is processed entirely locally and is never sent to any server.</p>
-            <div class="prompt-actions">
-                <button id="btn-enable-camera" class="btn btn-primary">Grant Camera Access</button>
-                <button id="btn-skip-camera" class="btn btn-secondary">Use Mouse/Touch Control</button>
+    <!-- Ambient gradient mesh (warm atmospheric glow) -->
+    <div class="ambient-mesh">
+        <div class="mesh-orb orb-1"></div>
+        <div class="mesh-orb orb-2"></div>
+        <div class="mesh-orb orb-3"></div>
+    </div>
+
+    <!-- Camera Permission Prompt -->
+    <div id="camera-prompt" class="prompt-overlay" style="display:none">
+        <div class="prompt-card">
+            <div class="prompt-shimmer"></div>
+            <div class="prompt-emoji">🖐️</div>
+            <h2>Hand Tracking</h2>
+            <p>Use your webcam for gesture control. Everything stays on your device — no data is uploaded.</p>
+            <div class="prompt-btns">
+                <button id="btn-enable-camera" class="btn-warm">
+                    <i class="fa-solid fa-camera"></i> Enable Camera
+                </button>
+                <button id="btn-skip-camera" class="btn-muted">
+                    <i class="fa-solid fa-mouse"></i> Use Mouse
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Dashboard Overlay UI -->
-    <div id="ui-overlay">
-        <!-- Header Panel -->
-        <header class="glass panel header-panel">
-            <div class="logo">
-                <i class="fa-solid fa-wand-magic-sparkles glow-icon"></i>
-                <div>
-                    <h1>CHRONOSWARM</h1>
-                    <span class="subtitle">Interactive 3D Swarm Control</span>
+    <!-- ═══════════ MAIN UI ═══════════ -->
+    <div id="ui-root">
+
+        <!-- ── TOPBAR ── -->
+        <header id="topbar">
+            <div class="topbar-brand">
+                <div class="brand-dot"></div>
+                <div class="brand-text">
+                    <span class="brand-name">Chrono<em>Swarm</em></span>
+                    <span class="brand-sub">Particle Engine</span>
                 </div>
             </div>
-            <div class="tracking-badge-container">
-                <div id="tracking-status" class="badge badge-inactive">
-                    <span class="badge-dot"></span>
-                    <span class="badge-text">Camera Off</span>
+
+            <div class="topbar-center" id="formation-pill">
+                <span class="formation-icon">◆</span>
+                <span class="formation-name" id="readout-shape">Saturn</span>
+            </div>
+
+            <div class="topbar-right">
+                <div id="tracking-status" class="status-chip chip-off">
+                    <span class="chip-dot"></span>
+                    <span class="badge-text">Offline</span>
                 </div>
             </div>
         </header>
 
-        <!-- Right Panels: Controls & Customization -->
-        <aside class="sidebar-right">
-            <!-- Gesture Reference Panel -->
-            <section class="glass panel gesture-panel">
-                <h3><i class="fa-solid fa-hand"></i> Gesture Reference</h3>
-                <div class="gesture-grid">
-                    <div class="gesture-item" data-shape="Saturn" id="ref-gesture-1">
-                        <span class="gesture-icon">☝️</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">Saturn</span>
-                            <span class="gesture-trigger">Index Finger</span>
-                        </div>
-                    </div>
-                    <div class="gesture-item" data-shape="Heart" id="ref-gesture-2">
-                        <span class="gesture-icon">✌️</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">Heart</span>
-                            <span class="gesture-trigger">Peace Sign</span>
-                        </div>
-                    </div>
-                    <div class="gesture-item" data-shape="Galaxy" id="ref-gesture-3">
-                        <span class="gesture-icon">🤟</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">Galaxy</span>
-                            <span class="gesture-trigger">3 Fingers</span>
-                        </div>
-                    </div>
-                    <div class="gesture-item" data-shape="Tornado" id="ref-gesture-4">
-                        <span class="gesture-icon">🖖</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">Tornado</span>
-                            <span class="gesture-trigger">4 Fingers</span>
-                        </div>
-                    </div>
-                    <div class="gesture-item" data-shape="Supernova" id="ref-gesture-5">
-                        <span class="gesture-icon">🖐️</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">Supernova</span>
-                            <span class="gesture-trigger">Open Palm</span>
-                        </div>
-                    </div>
-                    <div class="gesture-item" data-shape="DNA" id="ref-gesture-0">
-                        <span class="gesture-icon">✊</span>
-                        <div class="gesture-info">
-                            <span class="gesture-name">DNA Helix</span>
-                            <span class="gesture-trigger">Fist</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="gesture-tip">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <span>Pinch index & thumb to gather particles, release to blast!</span>
-                </div>
-            </section>
+        <!-- ── SHAPE DOCK (bottom) ── -->
+        <nav id="shape-dock">
+            <div class="dock-inner">
+                <button class="dock-item active" data-shape="Saturn" id="dock-saturn" title="Saturn">
+                    <div class="dock-icon"><i class="fa-solid fa-circle-dot"></i></div>
+                    <span class="dock-label">Saturn</span>
+                </button>
+                <button class="dock-item" data-shape="Heart" id="dock-heart" title="Heart">
+                    <div class="dock-icon"><i class="fa-solid fa-heart"></i></div>
+                    <span class="dock-label">Heart</span>
+                </button>
+                <button class="dock-item" data-shape="Galaxy" id="dock-galaxy" title="Galaxy">
+                    <div class="dock-icon"><i class="fa-solid fa-hurricane"></i></div>
+                    <span class="dock-label">Galaxy</span>
+                </button>
+                <button class="dock-item" data-shape="Tornado" id="dock-tornado" title="Tornado">
+                    <div class="dock-icon"><i class="fa-solid fa-tornado"></i></div>
+                    <span class="dock-label">Tornado</span>
+                </button>
+                <div class="dock-divider"></div>
+                <button class="dock-item" data-shape="Supernova" id="dock-supernova" title="Supernova">
+                    <div class="dock-icon"><i class="fa-solid fa-burst"></i></div>
+                    <span class="dock-label">Supernova</span>
+                </button>
+                <button class="dock-item" data-shape="DNA" id="dock-dna" title="DNA">
+                    <div class="dock-icon"><i class="fa-solid fa-dna"></i></div>
+                    <span class="dock-label">DNA</span>
+                </button>
+                <button class="dock-item" data-shape="Blackhole" id="dock-blackhole" title="Blackhole">
+                    <div class="dock-icon"><i class="fa-solid fa-compact-disc"></i></div>
+                    <span class="dock-label">Blackhole</span>
+                </button>
+                <button class="dock-item" data-shape="Atom" id="dock-atom" title="Atom">
+                    <div class="dock-icon"><i class="fa-solid fa-atom"></i></div>
+                    <span class="dock-label">Atom</span>
+                </button>
+            </div>
+        </nav>
 
-            <!-- Customizer Panel -->
-            <section class="glass panel control-panel">
-                <h3><i class="fa-solid fa-sliders"></i> Control Dashboard</h3>
-                
-                <!-- Swarm Dynamics Group -->
-                <div class="control-group">
-                    <div class="group-title">Swarm Properties</div>
-                    
-                    <div class="control-row">
-                        <label for="slider-particle-count">Particle Count</label>
-                        <div class="slider-container">
-                            <input type="range" id="slider-particle-count" min="1000" max="15000" step="500" value="5000">
-                            <span id="val-particle-count" class="slider-val">5,000</span>
-                        </div>
+        <!-- ── LEFT DRAWER: Telemetry + Camera ── -->
+        <aside id="drawer-left" class="drawer drawer-l">
+            <button class="drawer-toggle drawer-toggle-l" id="toggle-left">
+                <i class="fa-solid fa-chart-line"></i>
+            </button>
+            <div class="drawer-content">
+                <!-- Telemetry -->
+                <div class="card" id="card-telemetry">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fa-solid fa-signal"></i> Telemetry</span>
                     </div>
-
-                    <div class="control-row">
-                        <label for="slider-particle-size">Particle Size</label>
-                        <div class="slider-container">
-                            <input type="range" id="slider-particle-size" min="0.05" max="0.5" step="0.01" value="0.18">
-                            <span id="val-particle-size" class="slider-val">0.18</span>
+                    <div class="stat-grid">
+                        <div class="stat-box">
+                            <span class="stat-val stat-green" id="metric-fps">60</span>
+                            <span class="stat-key">FPS</span>
                         </div>
-                    </div>
-
-                    <div class="control-row">
-                        <label for="slider-morph-speed">Morph Speed</label>
-                        <div class="slider-container">
-                            <input type="range" id="slider-morph-speed" min="0.01" max="0.1" step="0.01" value="0.04">
-                            <span id="val-morph-speed" class="slider-val">0.04</span>
+                        <div class="stat-box">
+                            <span class="stat-val stat-gold" id="metric-gesture">None</span>
+                            <span class="stat-key">Gesture</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="metric-hands">0</span>
+                            <span class="stat-key">Hands</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-val" id="metric-pinch">No</span>
+                            <span class="stat-key">Pinch</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Interaction Settings Group -->
-                <div class="control-group">
-                    <div class="group-title">Interaction Physics</div>
-
-                    <div class="control-row">
-                        <label for="slider-gravity">Attraction Force</label>
-                        <div class="slider-container">
-                            <input type="range" id="slider-gravity" min="0.1" max="2.0" step="0.1" value="0.8">
-                            <span id="val-gravity" class="slider-val">0.8</span>
-                        </div>
-                    </div>
-
-                    <div class="control-row">
-                        <label for="slider-turbulence">Turbulence / Noise</label>
-                        <div class="slider-container">
-                            <input type="range" id="slider-turbulence" min="0" max="1.5" step="0.05" value="0.4">
-                            <span id="val-turbulence" class="slider-val">0.4</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Appearance Group -->
-                <div class="control-group">
-                    <div class="group-title">Aesthetics</div>
-
-                    <div class="control-row">
-                        <label for="select-theme">Color Theme</label>
-                        <div class="select-wrapper">
-                            <select id="select-theme">
-                                <option value="synthwave">Neon Synthwave</option>
-                                <option value="cosmic" selected>Cosmic Indigo</option>
-                                <option value="solar">Solar Flare</option>
-                                <option value="aurora">Northern Lights</option>
-                                <option value="fire-ice">Fire & Ice</option>
-                            </select>
-                            <i class="fa-solid fa-chevron-down select-arrow"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Manual Trigger Group -->
-                <div class="control-group">
-                    <div class="group-title">Manual Selector</div>
-                    <div class="manual-buttons">
-                        <button class="btn btn-tab active" data-shape="Saturn">Saturn</button>
-                        <button class="btn btn-tab" data-shape="Heart">Heart</button>
-                        <button class="btn btn-tab" data-shape="Galaxy">Galaxy</button>
-                        <button class="btn btn-tab" data-shape="Tornado">Tornado</button>
-                        <button class="btn btn-tab" data-shape="Supernova">Supernova</button>
-                        <button class="btn btn-tab" data-shape="DNA">DNA Helix</button>
-                        <button class="btn btn-tab" data-shape="Blackhole">Blackhole</button>
-                        <button class="btn btn-tab" data-shape="Atom">Atom</button>
-                    </div>
-                </div>
-            </section>
-        </aside>
-
-        <!-- Left Sidebar: Webcam Stream & Performance Metrics -->
-        <aside class="sidebar-left">
-            <!-- Camera Feed Card -->
-            <section class="glass panel webcam-panel">
-                <div class="panel-header-toggle">
-                    <h3><i class="fa-solid fa-video"></i> Hand Tracker</h3>
-                    <div class="switch-container">
-                        <span class="switch-label">Cam Track</span>
-                        <label class="switch">
+                <!-- Camera -->
+                <div class="card" id="card-camera">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fa-solid fa-video"></i> Camera</span>
+                        <label class="toggle-pill">
                             <input type="checkbox" id="toggle-camera">
-                            <span class="slider round"></span>
+                            <span class="toggle-track"><span class="toggle-knob"></span></span>
                         </label>
                     </div>
-                </div>
-                <div class="webcam-viewport">
-                    <video id="webcam" playsinline autoplay muted width="640" height="480"></video>
-                    <canvas id="hand-canvas" width="640" height="480"></canvas>
-                    <div id="cam-loading" class="cam-loading-overlay" style="display:none">
-                        <i class="fa-solid fa-spinner fa-spin-pulse"></i>
-                        <span>Starting Model...</span>
+                    <div class="cam-feed">
+                        <video id="webcam" playsinline autoplay muted width="640" height="480"></video>
+                        <canvas id="hand-canvas" width="640" height="480"></canvas>
+                        <div id="cam-loading" class="cam-msg" style="display:none">
+                            <i class="fa-solid fa-spinner fa-spin-pulse"></i>
+                            <span>Loading model…</span>
+                        </div>
+                        <div id="cam-placeholder" class="cam-msg" style="display:flex">
+                            <i class="fa-solid fa-video-slash"></i>
+                            <span>Camera off</span>
+                        </div>
                     </div>
-                    <div id="cam-placeholder" class="cam-placeholder" style="display:flex">
-                        <i class="fa-solid fa-video-slash"></i>
-                        <span>Tracking Disabled</span>
-                    </div>
-                </div>
-                <div class="webcam-controls">
-                    <label class="checkbox-container">
+                    <label class="mini-check">
                         <input type="checkbox" id="check-draw-landmarks" checked>
-                        <span class="checkmark"></span>
-                        Overlay Landmarks
+                        <span class="mini-check-box"></span>
+                        <span>Show landmarks</span>
                     </label>
                 </div>
-            </section>
 
-            <!-- Metrics Card -->
-            <section class="glass panel metrics-panel">
-                <h3><i class="fa-solid fa-chart-simple"></i> System Telemetry</h3>
-                <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-fps">60</div>
-                        <div class="metric-label">FPS</div>
+                <!-- Gesture Guide -->
+                <div class="card" id="card-gestures">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fa-solid fa-hand-sparkles"></i> Gestures</span>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-gesture">None</div>
-                        <div class="metric-label">Detected Gesture</div>
+                    <div class="gesture-list">
+                        <div class="g-row" data-shape="Saturn" id="ref-gesture-1">
+                            <span class="g-emoji">☝️</span>
+                            <span class="g-name">Saturn</span>
+                            <span class="g-key">1 finger</span>
+                        </div>
+                        <div class="g-row" data-shape="Heart" id="ref-gesture-2">
+                            <span class="g-emoji">✌️</span>
+                            <span class="g-name">Heart</span>
+                            <span class="g-key">Peace</span>
+                        </div>
+                        <div class="g-row" data-shape="Galaxy" id="ref-gesture-3">
+                            <span class="g-emoji">🤟</span>
+                            <span class="g-name">Galaxy</span>
+                            <span class="g-key">3 fingers</span>
+                        </div>
+                        <div class="g-row" data-shape="Tornado" id="ref-gesture-4">
+                            <span class="g-emoji">🖖</span>
+                            <span class="g-name">Tornado</span>
+                            <span class="g-key">4 fingers</span>
+                        </div>
+                        <div class="g-row" data-shape="Supernova" id="ref-gesture-5">
+                            <span class="g-emoji">🖐️</span>
+                            <span class="g-name">Supernova</span>
+                            <span class="g-key">Open palm</span>
+                        </div>
+                        <div class="g-row" data-shape="DNA" id="ref-gesture-0">
+                            <span class="g-emoji">✊</span>
+                            <span class="g-name">DNA</span>
+                            <span class="g-key">Fist</span>
+                        </div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-hands">0</div>
-                        <div class="metric-label">Hands Tracked</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-val" id="metric-pinch">No</div>
-                        <div class="metric-label">Pinching</div>
+                    <div class="g-tip">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        Pinch to gather · Release to explode
                     </div>
                 </div>
-            </section>
+            </div>
         </aside>
-    </div>
+
+        <!-- ── RIGHT DRAWER: Controls ── -->
+        <aside id="drawer-right" class="drawer drawer-r">
+            <button class="drawer-toggle drawer-toggle-r" id="toggle-right">
+                <i class="fa-solid fa-sliders"></i>
+            </button>
+            <div class="drawer-content">
+                <div class="card" id="card-controls">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fa-solid fa-sliders"></i> Controls</span>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <div class="ctrl-group-label">Swarm</div>
+                        <div class="slider-row">
+                            <label for="slider-particle-count">Particles</label>
+                            <input type="range" id="slider-particle-count" min="1000" max="15000" step="500" value="5000">
+                            <span class="slider-readout" id="val-particle-count">5,000</span>
+                        </div>
+                        <div class="slider-row">
+                            <label for="slider-particle-size">Size</label>
+                            <input type="range" id="slider-particle-size" min="0.05" max="0.5" step="0.01" value="0.18">
+                            <span class="slider-readout" id="val-particle-size">0.18</span>
+                        </div>
+                        <div class="slider-row">
+                            <label for="slider-morph-speed">Morph Speed</label>
+                            <input type="range" id="slider-morph-speed" min="0.01" max="0.1" step="0.01" value="0.04">
+                            <span class="slider-readout" id="val-morph-speed">0.04</span>
+                        </div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <div class="ctrl-group-label">Physics</div>
+                        <div class="slider-row">
+                            <label for="slider-gravity">Attraction</label>
+                            <input type="range" id="slider-gravity" min="0.1" max="2.0" step="0.1" value="0.8">
+                            <span class="slider-readout" id="val-gravity">0.8</span>
+                        </div>
+                        <div class="slider-row">
+                            <label for="slider-turbulence">Turbulence</label>
+                            <input type="range" id="slider-turbulence" min="0" max="1.5" step="0.05" value="0.4">
+                            <span class="slider-readout" id="val-turbulence">0.4</span>
+                        </div>
+                    </div>
+
+                    <div class="ctrl-group">
+                        <div class="ctrl-group-label">Palette</div>
+                        <div class="palette-grid">
+                            <button class="palette-chip active" data-theme="bioluminescent" title="Bioluminescent">
+                                <span class="chip-preview" style="background: conic-gradient(from 180deg, #00ffc8, #00b4d8, #9b5de5, #00ffc8)"></span>
+                                <span class="chip-name">Bio</span>
+                            </button>
+                            <button class="palette-chip" data-theme="volcanic" title="Volcanic Ember">
+                                <span class="chip-preview" style="background: conic-gradient(from 180deg, #ff4500, #ff8c00, #ffd700, #ff4500)"></span>
+                                <span class="chip-name">Volcanic</span>
+                            </button>
+                            <button class="palette-chip" data-theme="deep-ocean" title="Deep Ocean">
+                                <span class="chip-preview" style="background: conic-gradient(from 180deg, #0a2342, #1e6091, #48cae4, #0a2342)"></span>
+                                <span class="chip-name">Ocean</span>
+                            </button>
+                            <button class="palette-chip" data-theme="prismatic" title="Prismatic">
+                                <span class="chip-preview" style="background: conic-gradient(from 0deg, #ff006e, #fb5607, #ffbe0b, #06d6a0, #118ab2, #073b4c, #ff006e)"></span>
+                                <span class="chip-name">Prism</span>
+                            </button>
+                            <button class="palette-chip" data-theme="moonstone" title="Moonstone">
+                                <span class="chip-preview" style="background: conic-gradient(from 180deg, #c9b1ff, #ffd6e0, #bde0fe, #c9b1ff)"></span>
+                                <span class="chip-name">Moon</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </div><!-- /ui-root -->
 
     <!-- CDN Libraries -->
-    <!-- Three.js (r128) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
-    <!-- OrbitControls -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js" crossorigin="anonymous"></script>
-    <!-- MediaPipe Hands & Camera Utils -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
-    <!-- Project Application Modules -->
-    <script src="js/handtracking.js?v=4"></script>
-    <script src="js/particles.js?v=4"></script>
-    <script src="js/ui.js?v=4"></script>
-    <script src="js/app.js?v=4"></script>
+    <script src="js/handtracking.js?v=6"></script>
+    <script src="js/particles.js?v=6"></script>
+    <script src="js/ui.js?v=6"></script>
+    <script src="js/app.js?v=6"></script>
 </body>
 </html>
